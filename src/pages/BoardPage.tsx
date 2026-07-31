@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import {
@@ -31,8 +31,13 @@ export function BoardPage() {
   const { cards, fetchCards, updateCard, clearCards } = useCardStore()
 
   const [activeCard, setActiveCard] = useState<Card | null>(null)
-  // Visual card order during drag — keyed by list id
+  const activeCardRef = useRef<Card | null>(null)
+
+  // Visual card order during drag — keyed by list id.
+  // State drives rendering; ref gives handlers always-current values without stale closures.
   const [sortedIdsByList, setSortedIdsByList] = useState<Record<string, string[]>>({})
+  const dragRef = useRef<Record<string, string[]>>({})
+
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -64,7 +69,10 @@ export function BoardPage() {
   }
 
   function handleDragStart({ active }: DragStartEvent) {
-    setActiveCard(cards.find((c) => c.id === active.id) ?? null)
+    const card = cards.find((c) => c.id === active.id) ?? null
+    activeCardRef.current = card
+    setActiveCard(card)
+
     const byList: Record<string, string[]> = {}
     lists.forEach((l) => {
       byList[l.id] = cards
@@ -72,6 +80,7 @@ export function BoardPage() {
         .sort((a, b) => a.position - b.position)
         .map((c) => c.id)
     })
+    dragRef.current = byList
     setSortedIdsByList(byList)
   }
 
@@ -80,46 +89,52 @@ export function BoardPage() {
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Find which list currently holds the dragged card
-    const sourceListId = Object.entries(sortedIdsByList).find(([, ids]) =>
-      ids.includes(activeId)
-    )?.[0]
+    // Always read from ref — never from the render-time closure (which may be stale)
+    const current = dragRef.current
+    const sourceListId = Object.entries(current).find(([, ids]) => ids.includes(activeId))?.[0]
     if (!sourceListId) return
 
     const isOverAList = lists.some((l) => l.id === overId)
     const targetListId = isOverAList ? overId : cards.find((c) => c.id === overId)?.list_id
     if (!targetListId) return
 
-    setSortedIdsByList((prev) => {
-      if (sourceListId === targetListId) {
-        const ids = [...(prev[sourceListId] ?? [])]
-        const fromIndex = ids.indexOf(activeId)
-        const toIndex = ids.indexOf(overId)
-        if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return prev
-        return { ...prev, [sourceListId]: arrayMove(ids, fromIndex, toIndex) }
-      }
+    let next: Record<string, string[]>
 
-      // Cross-list: remove from source, insert at over position in dest
-      const sourceIds = [...(prev[sourceListId] ?? [])]
-      const destIds = [...(prev[targetListId] ?? [])]
+    if (sourceListId === targetListId) {
+      const ids = [...(current[sourceListId] ?? [])]
+      const fromIndex = ids.indexOf(activeId)
+      const toIndex = ids.indexOf(overId)
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return
+      next = { ...current, [sourceListId]: arrayMove(ids, fromIndex, toIndex) }
+    } else {
+      const sourceIds = [...(current[sourceListId] ?? [])]
+      const destIds = [...(current[targetListId] ?? [])]
       const fromIndex = sourceIds.indexOf(activeId)
-      if (fromIndex === -1) return prev
+      if (fromIndex === -1) return
       sourceIds.splice(fromIndex, 1)
       const toIndex = isOverAList ? destIds.length : destIds.indexOf(overId)
       destIds.splice(toIndex === -1 ? destIds.length : toIndex, 0, activeId)
-      return { ...prev, [sourceListId]: sourceIds, [targetListId]: destIds }
-    })
+      next = { ...current, [sourceListId]: sourceIds, [targetListId]: destIds }
+    }
+
+    dragRef.current = next
+    setSortedIdsByList(next)
   }
 
   function handleDragEnd({ active }: DragEndEvent) {
-    const draggedCard = activeCard
+    // Read from refs — state may lag behind the last handleDragOver call
+    const draggedCard = activeCardRef.current
+    activeCardRef.current = null
     setActiveCard(null)
     if (!draggedCard) return
 
-    // Find which list the card landed in and its final index
+    const current = dragRef.current
+    dragRef.current = {}
+    setSortedIdsByList({})
+
     let targetListId = draggedCard.list_id
     let finalIds: string[] = []
-    for (const [listId, ids] of Object.entries(sortedIdsByList)) {
+    for (const [listId, ids] of Object.entries(current)) {
       if (ids.includes(active.id as string)) {
         targetListId = listId
         finalIds = ids
@@ -127,18 +142,14 @@ export function BoardPage() {
       }
     }
 
-    setSortedIdsByList({})
-
     const finalIndex = finalIds.indexOf(active.id as string)
     if (finalIndex === -1) return
 
-    // Compute new fractional position from neighbors (excluding the active card itself)
     const neighborIds = finalIds.filter((id) => id !== active.id)
     const prevCard = cards.find((c) => c.id === neighborIds[finalIndex - 1])
     const nextCard = cards.find((c) => c.id === neighborIds[finalIndex])
     const newPosition = between(prevCard?.position ?? null, nextCard?.position ?? null)
 
-    // Skip if nothing changed
     if (newPosition === draggedCard.position && targetListId === draggedCard.list_id) return
 
     const updates: Partial<Card> = { position: newPosition }
