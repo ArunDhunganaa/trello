@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import type { Card, List } from '../../types'
 import { useListStore } from '../../store/listStore'
 import { useCardStore } from '../../store/cardStore'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useDroppable } from '@dnd-kit/core'
 import { CardItem } from '../card/CardItem'
 import { AddCardForm } from '../card/AddCardForm'
 
@@ -20,6 +22,9 @@ export function ListColumn({ list, cards }: ListColumnProps) {
   const [draftTitle, setDraftTitle] = useState(list.title)
   const titleInputRef = useRef<HTMLInputElement>(null)
 
+  const { setNodeRef } = useDroppable({ id: list.id })
+  const cardIds = cards.map((c) => c.id)
+
   function commitTitleEdit() {
     const trimmed = draftTitle.trim()
     if (trimmed && trimmed !== list.title) {
@@ -36,10 +41,6 @@ export function ListColumn({ list, cards }: ListColumnProps) {
       setDraftTitle(list.title)
       setEditingTitle(false)
     }
-  }
-
-  function handleAddCard(title: string) {
-    createCard(list.id, list.board_id, title)
   }
 
   return (
@@ -67,7 +68,6 @@ export function ListColumn({ list, cards }: ListColumnProps) {
             {list.title}
           </button>
         )}
-
         <button
           onClick={() => deleteList(list.id)}
           aria-label="Delete list"
@@ -79,19 +79,24 @@ export function ListColumn({ list, cards }: ListColumnProps) {
         </button>
       </div>
 
-      {/* Cards scroll area */}
-      <div className="flex-1 overflow-y-auto px-2 flex flex-col gap-2 py-1 min-h-0">
-        {cards.map((card) => (
-          <CardItem key={card.id} card={card} />
-        ))}
-      </div>
+      {/* Cards scroll area — also the droppable for empty-list drops */}
+      <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
+        <div
+          ref={setNodeRef}
+          className="flex-1 overflow-y-auto px-2 flex flex-col gap-2 py-1 min-h-[60px]"
+        >
+          {cards.map((card) => (
+            <CardItem key={card.id} card={card} />
+          ))}
+        </div>
+      </SortableContext>
 
       {/* Add card area */}
       <div className="pt-1">
         {addingCard ? (
           <AddCardForm
             onAdd={(title) => {
-              handleAddCard(title)
+              createCard(list.id, list.board_id, title)
               setAddingCard(false)
             }}
             onClose={() => setAddingCard(false)}

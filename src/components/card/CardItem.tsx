@@ -1,16 +1,17 @@
+import type { CSSProperties } from 'react'
 import type { Card } from '../../types'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { cn } from '../../lib/utils'
 
 interface CardItemProps {
   card: Card
   onClick?: () => void
 }
 
-export function CardItem({ card, onClick }: CardItemProps) {
+function CardVisual({ card }: { card: Card }) {
   return (
-    <div
-      onClick={onClick}
-      className="group relative rounded-lg bg-white dark:bg-zinc-800 shadow-sm hover:shadow-md border border-zinc-200/60 dark:border-zinc-700/60 cursor-pointer transition-shadow"
-    >
+    <div className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm hover:shadow-md transition-shadow">
       {card.cover_color && (
         <div
           className="h-8 rounded-t-lg"
@@ -34,6 +35,38 @@ export function CardItem({ card, onClick }: CardItemProps) {
           </span>
         )}
       </div>
+    </div>
+  )
+}
+
+export function CardDragOverlay({ card }: { card: Card }) {
+  return (
+    <div className="rotate-1 cursor-grabbing shadow-2xl">
+      <CardVisual card={card} />
+    </div>
+  )
+}
+
+export function CardItem({ card, onClick }: CardItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+  })
+
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={onClick}
+      className={cn('cursor-grab active:cursor-grabbing', isDragging && 'opacity-0')}
+    >
+      <CardVisual card={card} />
     </div>
   )
 }
