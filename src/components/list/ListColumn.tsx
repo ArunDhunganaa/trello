@@ -10,9 +10,10 @@ import { AddCardForm } from '../card/AddCardForm'
 interface ListColumnProps {
   list: List
   cards: Card[]
+  onCardClick: (card: Card) => void
 }
 
-export function ListColumn({ list, cards }: ListColumnProps) {
+export function ListColumn({ list, cards, onCardClick }: ListColumnProps) {
   const updateList = useListStore((s) => s.updateList)
   const deleteList = useListStore((s) => s.deleteList)
   const createCard = useCardStore((s) => s.createCard)
@@ -86,7 +87,7 @@ export function ListColumn({ list, cards }: ListColumnProps) {
           className="flex-1 overflow-y-auto px-2 flex flex-col gap-2 py-1 min-h-[60px]"
         >
           {cards.map((card) => (
-            <CardItem key={card.id} card={card} />
+            <CardItem key={card.id} card={card} onClick={() => onCardClick(card)} />
           ))}
         </div>
       </SortableContext>

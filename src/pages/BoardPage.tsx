@@ -13,6 +13,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import type { Card } from '../types'
 import { between } from '../lib/fractional'
+import { CardModal } from '../components/card/CardModal'
 import { useBoardStore } from '../store/boardStore'
 import { useListStore } from '../store/listStore'
 import { useCardStore } from '../store/cardStore'
@@ -32,6 +33,7 @@ export function BoardPage() {
   const [activeCard, setActiveCard] = useState<Card | null>(null)
   // Visual card order during drag — keyed by list id
   const [sortedIdsByList, setSortedIdsByList] = useState<Record<string, string[]>>({})
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -161,7 +163,12 @@ export function BoardPage() {
         <main className="flex-1 overflow-x-auto overflow-y-hidden">
           <div className="flex items-start gap-3 p-4 h-full">
             {lists.map((list) => (
-              <ListColumn key={list.id} list={list} cards={getCardsForList(list.id)} />
+              <ListColumn
+                key={list.id}
+                list={list}
+                cards={getCardsForList(list.id)}
+                onCardClick={(card) => setSelectedCardId(card.id)}
+              />
             ))}
             <AddListForm onAdd={(title) => createList(id, title)} />
           </div>
@@ -171,6 +178,17 @@ export function BoardPage() {
           {activeCard && <CardDragOverlay card={activeCard} />}
         </DragOverlay>
       </DndContext>
+
+      {selectedCardId && (
+        <CardModal
+          cardId={selectedCardId}
+          listName={
+            lists.find((l) => l.id === cards.find((c) => c.id === selectedCardId)?.list_id)
+              ?.title ?? ''
+          }
+          onClose={() => setSelectedCardId(null)}
+        />
+      )}
     </div>
   )
 }
