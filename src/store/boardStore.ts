@@ -4,9 +4,11 @@ import * as boardService from '../lib/boardService'
 
 interface BoardState {
   boards: Board[]
+  currentBoard: Board | null
   isLoading: boolean
   error: string | null
   fetchBoards: () => Promise<void>
+  fetchBoardById: (id: string) => Promise<void>
   createBoard: (title: string, background: string, ownerId: string) => Promise<void>
   updateBoard: (id: string, updates: Partial<Board>) => Promise<void>
   deleteBoard: (id: string) => Promise<void>
@@ -16,8 +18,14 @@ interface BoardState {
 
 export const useBoardStore = create<BoardState>((set, get) => ({
   boards: [],
+  currentBoard: null,
   isLoading: false,
   error: null,
+
+  fetchBoardById: async (id) => {
+    const board = await boardService.fetchBoardById(id)
+    set({ currentBoard: board })
+  },
 
   fetchBoards: async () => {
     set({ isLoading: true, error: null })

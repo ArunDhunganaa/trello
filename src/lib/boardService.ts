@@ -47,3 +47,9 @@ export async function deleteBoard(id: string): Promise<void> {
   const { error } = await supabase.from('boards').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function fetchBoardById(id: string): Promise<Board | null> {
+  const { data, error } = await supabase.from('boards').select('*').eq('id', id).single()
+  if (error) return null
+  return data as Board
+}
