@@ -20,15 +20,15 @@ export async function createBoard(
   title: string,
   background: string,
   ownerId: string
-): Promise<Board> {
-  const { data, error } = await supabase
-    .from('boards')
-    .insert({ title, background, owner_id: ownerId })
-    .select()
-    .single()
+): Promise<void> {
+  // Insert without .select() — PostgREST evaluates the SELECT RLS policy on
+  // RETURNING before the on_board_created AFTER trigger commits board_members,
+  // so is_board_member() returns false and the whole transaction rolls back.
+  // Two separate requests avoid this: INSERT commits first, trigger fires, then
+  // the subsequent fetchBoards call sees the membership row.
+  const { error } = await supabase.from('boards').insert({ title, background, owner_id: ownerId })
 
   if (error) throw error
-  return data as Board
 }
 
 export async function updateBoard(id: string, updates: BoardUpdate): Promise<Board> {

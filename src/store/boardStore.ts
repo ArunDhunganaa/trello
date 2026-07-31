@@ -32,8 +32,11 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   createBoard: async (title, background, ownerId) => {
     set({ error: null })
     try {
-      const board = await boardService.createBoard(title, background, ownerId)
-      set((state) => ({ boards: [board, ...state.boards] }))
+      await boardService.createBoard(title, background, ownerId)
+      // Fetch fresh after insert so the trigger-created board_members row is
+      // committed and is_board_member() returns true for the SELECT policy.
+      const boards = await boardService.fetchBoards()
+      set({ boards })
     } catch (err) {
       set({ error: (err as Error).message })
     }
