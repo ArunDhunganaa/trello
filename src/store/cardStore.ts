@@ -12,6 +12,9 @@ interface CardState {
   updateCard: (id: string, updates: Partial<Card>) => Promise<void>
   deleteCard: (id: string) => Promise<void>
   clearCards: () => void
+  // Realtime: apply server-pushed changes directly (no API call)
+  upsertCard: (card: Card) => void
+  removeCard: (id: string) => void
 }
 
 export const useCardStore = create<CardState>((set, get) => ({
@@ -68,4 +71,20 @@ export const useCardStore = create<CardState>((set, get) => ({
   },
 
   clearCards: () => set({ cards: [] }),
+
+  upsertCard: (card) => {
+    if (card.is_archived) {
+      set((state) => ({ cards: state.cards.filter((c) => c.id !== card.id) }))
+      return
+    }
+    set((state) => {
+      const exists = state.cards.some((c) => c.id === card.id)
+      if (exists) {
+        return { cards: state.cards.map((c) => (c.id === card.id ? card : c)) }
+      }
+      return { cards: [...state.cards, card] }
+    })
+  },
+
+  removeCard: (id) => set((state) => ({ cards: state.cards.filter((c) => c.id !== id) })),
 }))

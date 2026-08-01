@@ -1,6 +1,10 @@
 -- TaskFlow — Full Schema
 -- Run this in the Supabase SQL editor.
 -- Prerequisites: pgcrypto extension (usually pre-enabled on Supabase).
+--
+-- Realtime (run once after applying this schema):
+--   ALTER PUBLICATION supabase_realtime ADD TABLE public.lists;
+--   ALTER PUBLICATION supabase_realtime ADD TABLE public.cards;
 
 -- ─────────────────────────────────────────────────────────────
 -- Profiles (extends auth.users 1-to-1)

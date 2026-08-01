@@ -22,6 +22,7 @@ import { BoardHeader } from '../components/board/BoardHeader'
 import { ListColumn } from '../components/list/ListColumn'
 import { AddListForm } from '../components/list/AddListForm'
 import { CardDragOverlay } from '../components/card/CardItem'
+import { useRealtimeBoard } from '../hooks/useRealtimeBoard'
 
 export function BoardPage() {
   const { id } = useParams<{ id: string }>()
@@ -39,6 +40,8 @@ export function BoardPage() {
   const dragRef = useRef<Record<string, string[]>>({})
 
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+
+  useRealtimeBoard(id)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
