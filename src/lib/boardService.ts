@@ -48,6 +48,16 @@ export async function deleteBoard(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function fetchArchivedBoards(): Promise<Board[]> {
+  const { data, error } = await supabase
+    .from('boards')
+    .select('*')
+    .eq('is_archived', true)
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return data as Board[]
+}
+
 export async function fetchBoardById(id: string): Promise<Board | null> {
   const { data, error } = await supabase.from('boards').select('*').eq('id', id).single()
   if (error) return null

@@ -39,7 +39,11 @@ export const useCardStore = create<CardState>((set, get) => ({
     set({ error: null })
     try {
       const card = await cardService.createCard(listId, boardId, title, position)
-      set((state) => ({ cards: [...state.cards, card] }))
+      set((state) => {
+        // Realtime may have already added this card — don't duplicate it
+        if (state.cards.some((c) => c.id === card.id)) return {}
+        return { cards: [...state.cards, card] }
+      })
     } catch (err) {
       set({ error: (err as Error).message })
     }

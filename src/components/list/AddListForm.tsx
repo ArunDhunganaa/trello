@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 
 interface AddListFormProps {
   onAdd: (title: string) => void
+  disabled?: boolean
 }
 
-export function AddListForm({ onAdd }: AddListFormProps) {
+export function AddListForm({ onAdd, disabled }: AddListFormProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -34,8 +35,12 @@ export function AddListForm({ onAdd }: AddListFormProps) {
   if (!open) {
     return (
       <button
-        onClick={() => setOpen(true)}
-        className="w-72 shrink-0 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors"
+        onClick={() => {
+          if (!disabled) setOpen(true)
+        }}
+        disabled={disabled}
+        title={disabled ? 'Owner or admin access required' : undefined}
+        className={`w-72 shrink-0 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/20 text-white text-sm font-medium transition-colors${disabled ? ' opacity-50 cursor-not-allowed' : ' hover:bg-white/30'}`}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
@@ -46,7 +51,7 @@ export function AddListForm({ onAdd }: AddListFormProps) {
   }
 
   return (
-    <div className="w-72 shrink-0 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-2 flex flex-col gap-2">
+    <div className="w-72 shrink-0 rounded-xl bg-[#F1F2F4] dark:bg-zinc-800 p-2 flex flex-col gap-2">
       <input
         ref={inputRef}
         value={title}

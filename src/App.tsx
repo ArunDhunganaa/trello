@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { BoardPage } from './pages/BoardPage'
+import { Toaster } from './components/ui/Toaster'
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -37,6 +38,7 @@ export default function App() {
         />
         <Route path="/" element={<Navigate to="/boards" replace />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   )
 }

@@ -4,6 +4,22 @@
   --color-brand-500: #0079bf;
   --color-brand-600: #005fa3;
   --color-brand-700: #004f8a;
+
+  /* Trello dark chrome palette */
+  --color-navy-dark: #1d2125;
+  --color-navy-mid: #22272b;
+  --color-navy-surface: #282e33;
+  --color-trello-blue: #579dff;
+  --color-trello-blue-hover: #85b8ff;
+  --color-trello-text: #b6c2cf;
+
+  /* Trello light page palette */
+  --color-page-bg: #f7f8f9;
+  --color-sidebar-active: #e9f2ff;
+  --color-sidebar-active-text: #0052cc;
+  --color-board-item-hover: #f1f2f4;
+  --color-muted-text: #44546f;
+  --color-heading-text: #172b4d;
 }
 
 body {

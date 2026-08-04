@@ -4,6 +4,7 @@ export interface Profile {
   id: string
   username: string
   avatar_url: string | null
+  email?: string
   created_at: string
 }
 
@@ -75,6 +76,28 @@ export interface ChecklistItem {
   title: string
   is_completed: boolean
   position: number
+}
+
+export interface Comment {
+  id: string
+  card_id: string
+  user_id: string
+  body: string
+  created_at: string
+  updated_at: string
+  author_username?: string
+  author_avatar_url?: string | null
+}
+
+export interface Attachment {
+  id: string
+  card_id: string
+  uploaded_by: string
+  filename: string
+  storage_path: string
+  mime_type: string
+  size_bytes: number
+  created_at: string
 }
 
 export interface CardWithRelations extends Card {

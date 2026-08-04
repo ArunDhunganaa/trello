@@ -1,77 +1,74 @@
-# React + TypeScript + Vite
+# Trello Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/ArunDhunganaa/trello/actions/workflows/ci.yml/badge.svg)](https://github.com/ArunDhunganaa/trello/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+A full-stack Trello clone built as a portfolio project. Features real-time collaboration, drag-and-drop, and a complete card management system.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech Stack
 
-## React Compiler
+| Layer | Choice |
+|---|---|
+| UI | React 19 + TypeScript + Tailwind CSS v4 |
+| State | Zustand |
+| Backend | Supabase (Postgres + Auth + Realtime + Storage) |
+| Drag & Drop | @dnd-kit |
+| Forms | React Hook Form + Zod |
+| Tests | Vitest + React Testing Library |
+| Deploy | Vercel |
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Features
 
-Note: This will impact Vite dev & build performances.
+- Board management with custom backgrounds (colors + images)
+- Lists and cards with drag-and-drop reordering
+- Card detail modal — description (Markdown), checklists, due dates, cover images, labels
+- Real-time sync across browser tabs via Supabase Realtime
+- Comments with edit/delete
+- File attachments
+- Board member invites with role-based access (owner / admin / member)
+- Search palette (⌘K)
+- Dark mode
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Install dependencies
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Copy environment variables
+cp .env.local.example .env.local
+# Fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Apply the database schema (paste into Supabase SQL Editor)
+# → supabase/schema.sql
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+# Start the dev server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run test` | Watch mode tests |
+| `npm run test:run` | Single-run tests |
+| `npm run test:coverage` | Coverage report |
+| `npm run lint` | ESLint |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Structure
 
 ```
+src/
+├── components/       # UI components (board, card, list, layout, ui)
+├── lib/              # Supabase services + utilities
+├── pages/            # Route-level pages
+├── store/            # Zustand stores
+├── types/            # Shared TypeScript types
+└── test/             # Test setup
+supabase/
+└── schema.sql        # Full database schema + RLS policies
+.github/
+└── workflows/ci.yml  # GitHub Actions — type-check, lint, test
+```
+
